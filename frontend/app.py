@@ -38,9 +38,6 @@ with col2:
 # -----------------------------
 # Predict button
 # -----------------------------
-# -----------------------------
-# Predict button
-# -----------------------------
 if st.button("Predict Price 💰"):
     payload = {
         "Location": Location,
@@ -52,16 +49,16 @@ if st.button("Predict Price 💰"):
         "Seats": Seats,
         "Brand": Brand,
         "Model": Model,
-        "Mileage": Mileage,
-        "Engine": Engine,
-        "Power": Power
+        "Mileage_KMPH": Mileage,
+        "Engine_CC": Engine,
+        "Power_BHP": Power
     }
 
     try:
         response = requests.post(BACKEND_URL, json=payload)
 
         if response.status_code == 200:
-            price = response.json()["prediction"]
+            price = response.json()["predicted_price"]
             st.success(f"💰 Estimated Price: ₹ {price:.2f} Lakhs")
         else:
             st.error(f"❌ Backend error: {response.status_code}")

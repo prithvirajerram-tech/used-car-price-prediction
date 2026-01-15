@@ -43,3 +43,11 @@ with open("model.pkl", "wb") as f:
     pickle.dump(model, f)
 
 print("Model saved as model.pkl")
+
+from sklearn.preprocessing import OneHotEncoder
+
+cat_encoder = OneHotEncoder(
+    handle_unknown="ignore",   # 🔑 THIS IS THE KEY
+    sparse_output=False
+)
+

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
 import pickle
+from datetime import datetime
 
 # Initialize FastAPI app
 app = FastAPI(title="Used Car Price Prediction API")
@@ -10,7 +11,14 @@ app = FastAPI(title="Used Car Price Prediction API")
 with open("model.pkl", "rb") as f:
     model = pickle.load(f)
 
+def normalize_model(model: str) -> str:
+    if not model or model.strip() == "":
+        return "unknown"
+    return model.lower()
+
 # Define input schema
+from pydantic import BaseModel
+
 class CarInput(BaseModel):
     Location: str
     Year: int
@@ -20,40 +28,35 @@ class CarInput(BaseModel):
     Owner_Type: str
     Seats: int
     Brand: str
-    Model: str = "unknown"
-    Mileage: float
-    Engine: float
-    Power: float
+    Model: str
+
+    Mileage_KMPH: float
+    Engine_CC: float
+    Power_BHP: float
+
+
 
 @app.post("/predict")
-def predict_price(data: CarInput):
-    df = pd.DataFrame([data.dict()])
+def predict(data: CarInput):
+    # Convert request body to dictionary
+    input_dict = data.dict()
 
-    # ---------------------------
+    # Convert frontend fields to model-required fields
+    input_dict["mileage_num"] = input_dict.pop("Mileage_KMPH")
+    input_dict["engine_num"] = input_dict.pop("Engine_CC")
+    input_dict["power_num"] = input_dict.pop("Power_BHP")
+
+    # Create DataFrame
+    df = pd.DataFrame([input_dict])
+
     # Feature engineering
-    # ---------------------------
+    df["car_age"] = datetime.now().year - df["Year"]
 
-    # car age
-    df["car_age"] = 2024 - df["Year"]
-
-    # 🔴 REQUIRED numeric columns (must exist)
-    df["mileage_num"] = df["Mileage"]
-    df["engine_num"] = df["Engine"]
-    df["power_num"] = df["Power"]
-
-    # ---------------------------
-    # Safety defaults
-    # ---------------------------
-    if "Model" not in df.columns:
-        df["Model"] = "unknown"
-
-    # ---------------------------
-    # Debug (remove later)
-    # ---------------------------
-    print("FINAL COLUMNS:", df.columns.tolist())
-
+    # Make prediction
     prediction = model.predict(df)[0]
 
-    return {"prediction": float(prediction)}
+    return {
+        "predicted_price": round(float(prediction), 2)
+    }
 
 
