@@ -41,3 +41,27 @@ Verify:
 ```bash
 pwd        # Mac/Linux
 cd         # Windows
+
+
+
+
+
+## How to Run the Project
+
+### 1. Create virtual environment
+python -m venv venv
+venv\Scripts\activate
+
+### 2. Install dependencies
+pip install -r requirements.txt
+
+### 3. Start backend (Terminal 1)
+uvicorn api.app:app --reload
+
+### 4. Start frontend (Terminal 2)
+streamlit run frontend/app.py
+
+### 5. Open browser
+Backend: http://127.0.0.1:8000/docs  
+Frontend: http://localhost:8501
+
